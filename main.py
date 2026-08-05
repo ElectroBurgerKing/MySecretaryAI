@@ -25,7 +25,7 @@ def start(message):
 def chat(message):
     try:
         result = client.chat.completions.create(
-            model="meta-llama/llama-3.1-8b-instruct:free",
+            model="qwen/qwen-2.5-7b-instruct:free",
             messages=[
                 {
                     "role": "user",
@@ -35,7 +35,11 @@ def chat(message):
         )
 
         answer = result.choices[0].message.content
-        bot.send_message(message.chat.id, answer)
+
+        bot.send_message(
+            message.chat.id,
+            answer
+        )
 
     except Exception as e:
         bot.send_message(
