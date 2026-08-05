@@ -1,6 +1,10 @@
 import google.generativeai as genai
 
-from config import GEMINI_API_KEY, MODEL
+from config import (
+    GEMINI_API_KEY,
+    MODELS
+)
+
 from memory import add_message
 from brain import build_prompt
 
@@ -10,17 +14,13 @@ genai.configure(
 )
 
 
-model = genai.GenerativeModel(
-    MODEL
-)
-
-
 def ask_ai(chat_id, user_text):
 
     messages = build_prompt(
         chat_id,
         user_text
     )
+
 
     prompt = ""
 
@@ -32,35 +32,58 @@ def ask_ai(chat_id, user_text):
             + "\n"
         )
 
-    try:
-        response = model.generate_content(
-            prompt
-        )
 
-        answer = response.text.strip()
+    last_error = None
 
-        if answer:
 
-            add_message(
-                chat_id,
-                "user",
-                user_text
+    # Пробуем модели по очереди
+    for model_name in MODELS:
+
+        try:
+
+            model = genai.GenerativeModel(
+                model_name
             )
 
-            add_message(
-                chat_id,
-                "assistant",
-                answer
+
+            response = model.generate_content(
+                prompt
             )
 
-            return answer
 
-    except Exception as e:
-
-        return (
-            "Ошибка ИИ: "
-            + str(e)
-        )
+            answer = response.text.strip()
 
 
-    return "Не получилось получить ответ."
+            if answer:
+
+                add_message(
+                    chat_id,
+                    "user",
+                    user_text
+                )
+
+                add_message(
+                    chat_id,
+                    "assistant",
+                    answer
+                )
+
+                return answer
+
+
+        except Exception as e:
+
+            last_error = e
+
+            print(
+                f"Модель {model_name} не сработала: {e}"
+            )
+
+
+            continue
+
+
+    return (
+        "Извините, у меня временные сложности с подключением. "
+        "Попробуйте немного позже."
+    )
