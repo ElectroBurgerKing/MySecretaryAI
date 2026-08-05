@@ -21,7 +21,7 @@ async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     try:
         response = client.chat.completions.create(
-            model="gpt-4.1-mini",
+            model=model="google/gemini-2.0-flash-exp:free",
             messages=[
                 {
                     "role": "system",
