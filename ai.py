@@ -4,6 +4,7 @@ from config import OPENAI_API_KEY, MODEL
 
 from memory import add_message
 from brain import build_prompt
+from memory_ai import analyze_memory
 
 
 client = OpenAI(
@@ -14,10 +15,21 @@ client = OpenAI(
 
 def ask_ai(chat_id, user_text):
 
+    # Сначала пробуем сохранить важные факты
+    try:
+        analyze_memory(
+            chat_id,
+            user_text
+        )
+    except Exception:
+        pass
+
+
     messages = build_prompt(
         chat_id,
         user_text
     )
+
 
     for _ in range(2):
 
@@ -31,13 +43,14 @@ def ask_ai(chat_id, user_text):
         if answer:
             answer = answer.strip()
 
-        # Защита от служебных сообщений
+
         if (
             answer
             and "User Safety:" not in answer
             and "Response Safety:" not in answer
             and len(answer) > 3
         ):
+
             add_message(
                 chat_id,
                 "user",
@@ -53,9 +66,7 @@ def ask_ai(chat_id, user_text):
             return answer
 
 
-    fallback = (
+    return (
         "Извини, я сейчас не смог нормально ответить. "
-        "Попробуй ещё раз через несколько секунд."
+        "Попробуй ещё раз."
     )
-
-    return fallback
