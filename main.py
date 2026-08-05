@@ -25,7 +25,7 @@ def start(message):
 def chat(message):
     try:
         result = client.chat.completions.create(
-            model="qwen/qwen-2.5-7b-instruct:free",
+            model="openrouter/free",
             messages=[
                 {
                     "role": "user",
