@@ -2,7 +2,6 @@ import os
 import telebot
 from openai import OpenAI
 
-# Токены из Railway Variables
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
@@ -23,9 +22,9 @@ def start(message):
 
 
 @bot.message_handler(func=lambda message: True)
-def ai_answer(message):
+def chat(message):
     try:
-        response = client.chat.completions.create(
+        result = client.chat.completions.create(
             model="google/gemini-2.0-flash-exp:free",
             messages=[
                 {
@@ -35,17 +34,13 @@ def ai_answer(message):
             ]
         )
 
-        answer = response.choices[0].message.content
-
-        bot.send_message(
-            message.chat.id,
-            answer
-        )
+        answer = result.choices[0].message.content
+        bot.send_message(message.chat.id, answer)
 
     except Exception as e:
         bot.send_message(
             message.chat.id,
-            f"Ошибка: {e}"
+            "Ошибка ИИ: " + str(e)
         )
 
 
