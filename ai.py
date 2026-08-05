@@ -1,12 +1,6 @@
 import google.generativeai as genai
 
-from config import (
-    GEMINI_API_KEY,
-    MODEL
-)
-
-from memory import add_message
-from brain import build_prompt
+from config import GEMINI_API_KEY
 
 
 genai.configure(
@@ -14,60 +8,14 @@ genai.configure(
 )
 
 
-model = genai.GenerativeModel(
-    MODEL
-)
-
-
 def ask_ai(chat_id, user_text):
 
-    messages = build_prompt(
-        chat_id,
-        user_text
-    )
+    models = genai.list_models()
 
+    result = []
 
-    # Собираем историю в один текст для Gemini
-    prompt = ""
+    for m in models:
+        if "generateContent" in m.supported_generation_methods:
+            result.append(m.name)
 
-    for message in messages:
-        role = message["role"]
-        content = message["content"]
-
-        prompt += f"{role}: {content}\n"
-
-
-    try:
-        response = model.generate_content(
-            prompt
-        )
-
-        answer = response.text.strip()
-
-
-        if answer:
-
-            add_message(
-                chat_id,
-                "user",
-                user_text
-            )
-
-            add_message(
-                chat_id,
-                "assistant",
-                answer
-            )
-
-            return answer
-
-
-    except Exception as e:
-
-        return (
-            "Произошла ошибка при обращении к ИИ: "
-            + str(e)
-        )
-
-
-    return "Я не смог получить ответ. Попробуй ещё раз."
+    return "\n".join(result)
