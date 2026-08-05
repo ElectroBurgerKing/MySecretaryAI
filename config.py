@@ -6,7 +6,7 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 
-MODEL = MODEL = "models/gemini-2.5-flash-lite"
+MODEL = MODEL = "models/gemini-3.1-flash-lite"
 
 
 MAX_HISTORY = 20
