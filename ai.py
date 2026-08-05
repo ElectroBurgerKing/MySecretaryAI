@@ -1,29 +1,25 @@
-from openai import OpenAI
+import google.generativeai as genai
 
-from config import OPENAI_API_KEY, MODEL
+from config import (
+    GEMINI_API_KEY,
+    MODEL
+)
 
 from memory import add_message
 from brain import build_prompt
-from memory_ai import analyze_memory
 
 
-client = OpenAI(
-    api_key=OPENAI_API_KEY,
-    base_url="https://openrouter.ai/api/v1"
+genai.configure(
+    api_key=GEMINI_API_KEY
+)
+
+
+model = genai.GenerativeModel(
+    MODEL
 )
 
 
 def ask_ai(chat_id, user_text):
-
-    # Сначала пробуем сохранить важные факты
-    try:
-        analyze_memory(
-            chat_id,
-            user_text
-        )
-    except Exception:
-        pass
-
 
     messages = build_prompt(
         chat_id,
@@ -31,25 +27,25 @@ def ask_ai(chat_id, user_text):
     )
 
 
-    for _ in range(2):
+    # Собираем историю в один текст для Gemini
+    prompt = ""
 
-        result = client.chat.completions.create(
-            model=MODEL,
-            messages=messages
+    for message in messages:
+        role = message["role"]
+        content = message["content"]
+
+        prompt += f"{role}: {content}\n"
+
+
+    try:
+        response = model.generate_content(
+            prompt
         )
 
-        answer = result.choices[0].message.content
+        answer = response.text.strip()
+
 
         if answer:
-            answer = answer.strip()
-
-
-        if (
-            answer
-            and "User Safety:" not in answer
-            and "Response Safety:" not in answer
-            and len(answer) > 3
-        ):
 
             add_message(
                 chat_id,
@@ -66,7 +62,12 @@ def ask_ai(chat_id, user_text):
             return answer
 
 
-    return (
-        "Извини, я сейчас не смог нормально ответить. "
-        "Попробуй ещё раз."
-    )
+    except Exception as e:
+
+        return (
+            "Произошла ошибка при обращении к ИИ: "
+            + str(e)
+        )
+
+
+    return "Я не смог получить ответ. Попробуй ещё раз."
