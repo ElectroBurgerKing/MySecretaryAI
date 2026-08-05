@@ -35,14 +35,36 @@ def ask_ai(chat_id, user_text):
         "content": user_text
     })
 
-    result = client.chat.completions.create(
-        model=MODEL,
-        messages=messages
+    # Пробуем получить нормальный ответ максимум 2 раза
+    for _ in range(2):
+        result = client.chat.completions.create(
+            model=MODEL,
+            messages=messages
+        )
+
+        answer = result.choices[0].message.content
+
+        if answer:
+            answer = answer.strip()
+
+        # Если модель вернула служебный текст — пробуем ещё раз
+        if (
+            answer
+            and "User Safety:" not in answer
+            and "Response Safety:" not in answer
+            and len(answer) > 3
+        ):
+            add_message(chat_id, "user", user_text, MAX_HISTORY)
+            add_message(chat_id, "assistant", answer, MAX_HISTORY)
+            return answer
+
+    # Если две попытки не помогли
+    fallback = (
+        "Извини, я сейчас не смог подобрать хороший ответ. "
+        "Попробуй написать ещё раз через несколько секунд 😊"
     )
 
-    answer = result.choices[0].message.content
-
     add_message(chat_id, "user", user_text, MAX_HISTORY)
-    add_message(chat_id, "assistant", answer, MAX_HISTORY)
+    add_message(chat_id, "assistant", fallback, MAX_HISTORY)
 
-    return answer
+    return fallback
