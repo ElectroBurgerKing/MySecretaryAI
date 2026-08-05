@@ -13,6 +13,7 @@ MODELS = [
     "models/gemini-3.5-flash-lite"
 ]
 
+MODEL = MODELS[0]
 
 MAX_HISTORY = 20
 
