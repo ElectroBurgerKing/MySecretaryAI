@@ -1,75 +1,39 @@
-from telebot import TeleBot
-
-from profile import (
-    get_all_facts,
-    set_fact
-)
+from profile import get_all_facts, set_fact
 
 
-def show_memory(bot: TeleBot, chat_id):
+def get_memory(chat_id):
 
     facts = get_all_facts(chat_id)
 
-
     if not facts:
+        return "🧠 Память пустая."
 
-        bot.send_message(
-            chat_id,
-            "🧠 Память Элло пустая."
-        )
-
-        return
-
-
-    text = "🧠 Что я помню о тебе:\n\n"
-
+    text = "🧠 Что я помню:\n\n"
 
     for key, value in facts.items():
 
         if isinstance(value, list):
 
             if value:
-
-                text += (
-                    f"• {key}: "
-                    + ", ".join(value)
-                    + "\n"
-                )
+                text += f"• {key}: {', '.join(value)}\n"
 
         else:
+            text += f"• {key}: {value}\n"
 
-            text += (
-                f"• {key}: {value}\n"
-            )
-
-
-    bot.send_message(
-        chat_id,
-        text
-    )
+    return text
 
 
 
-def add_memory(bot: TeleBot, chat_id, text):
+def add_memory(chat_id, data):
 
-    if "=" not in text:
-
-        bot.send_message(
-            chat_id,
-            "❌ Формат неправильный.\n\n"
+    if "=" not in data:
+        return (
+            "❌ Неверный формат.\n\n"
             "Пример:\n"
-            "name=Алексей\n"
-            "hobby=игры"
+            "name=Алексей"
         )
 
-        return
-
-
-    key, value = text.split(
-        "=",
-        1
-    )
-
+    key, value = data.split("=", 1)
 
     set_fact(
         chat_id,
@@ -77,22 +41,14 @@ def add_memory(bot: TeleBot, chat_id, text):
         value.strip()
     )
 
-
-    bot.send_message(
-        chat_id,
-        "✅ Запомнил."
-    )
+    return "✅ Запомнил."
 
 
 
-def clear_memory(bot: TeleBot, chat_id):
+def clear_memory(chat_id):
 
     profile = get_all_facts(chat_id)
 
     profile.clear()
 
-
-    bot.send_message(
-        chat_id,
-        "🗑 Память очищена."
-    )
+    return "🗑 Память очищена."
