@@ -50,30 +50,25 @@ def secretary_keyboard():
     )
 
 
-    keyboard.add(
-        InlineKeyboardButton(
-            "🔄 Обновить",
-            callback_data="sec_refresh"
-        )
-    )
-
-
     return keyboard
-
 
 
 
 def update_secretary_message(bot, call):
 
     bot.edit_message_text(
+
         secretary_info(
             call.message.chat.id
         ),
-        chat_id=call.message.chat.id,
-        message_id=call.message.message_id,
-        reply_markup=secretary_keyboard()
-    )
 
+        chat_id=call.message.chat.id,
+
+        message_id=call.message.message_id,
+
+        reply_markup=secretary_keyboard()
+
+    )
 
 
 
@@ -94,14 +89,18 @@ def register_buttons(bot: TeleBot):
         if call.data == "secretary":
 
             bot.send_message(
+
                 chat_id,
+
                 secretary_info(chat_id),
+
                 reply_markup=secretary_keyboard()
+
             )
 
 
 
-        # Включить / выключить
+        # Включение / выключение
 
         elif call.data == "sec_toggle":
 
@@ -197,7 +196,7 @@ def register_buttons(bot: TeleBot):
 
 
 
-        # Переключение памяти
+        # Память
 
         elif call.data == "sec_memory":
 
@@ -208,17 +207,6 @@ def register_buttons(bot: TeleBot):
 
             settings["memory"] = not settings["memory"]
 
-
-            update_secretary_message(
-                bot,
-                call
-            )
-
-
-
-        # Просто обновить
-
-        elif call.data == "sec_refresh":
 
             update_secretary_message(
                 bot,
