@@ -1,68 +1,79 @@
-from openai import OpenAI
+import re
 
-from config import OPENAI_API_KEY, MODEL
 from profile import set_fact
-
-
-client = OpenAI(
-    api_key=OPENAI_API_KEY,
-    base_url="https://openrouter.ai/api/v1"
-)
 
 
 def analyze_memory(chat_id, user_text):
 
-    prompt = f"""
-Проанализируй сообщение пользователя.
+    text = user_text.strip()
+    lower = text.lower()
 
-Твоя задача — найти важные факты, которые стоит запомнить навсегда.
 
-Запоминай только:
-- имя;
-- возраст (если пользователь сам сказал);
-- профессию;
-- интересы;
-- важные предпочтения.
+    # Имя
+    if "меня зовут" in lower:
 
-Если есть факт для сохранения, верни строго в формате:
+        name = text.lower().split("меня зовут", 1)[1].strip()
 
-ключ=значение
+        if name:
+            set_fact(chat_id, "name", name.title())
 
-Примеры:
-
-name=Алексей
-job=программист
-hobby=игры
-
-Если запоминать нечего — напиши:
-
-none
-
-Сообщение пользователя:
-
-{user_text}
-"""
-
-    result = client.chat.completions.create(
-        model=MODEL,
-        messages=[
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ]
-    )
-
-    answer = result.choices[0].message.content.strip()
-
-    if answer.lower() == "none":
         return
 
-    if "=" in answer:
-        key, value = answer.split("=", 1)
+
+    # Возраст
+    age = re.search(r"мне\s+(\d{1,3})\s*(лет|года|год)", lower)
+
+    if age:
 
         set_fact(
             chat_id,
-            key.strip(),
-            value.strip()
+            "age",
+            age.group(1)
         )
+
+        return
+
+
+    # Профессия
+    if "я работаю" in lower:
+
+        job = text.split("я работаю", 1)[1].strip()
+
+        if job:
+            set_fact(
+                chat_id,
+                "job",
+                job
+            )
+
+        return
+
+
+    # Интересы
+    if "я люблю" in lower:
+
+        hobby = text.split("я люблю", 1)[1].strip()
+
+        if hobby:
+            set_fact(
+                chat_id,
+                "hobby",
+                hobby
+            )
+
+        return
+
+
+    # Запомни ...
+    if lower.startswith("запомни"):
+
+        note = text[8:].strip()
+
+        if note:
+            set_fact(
+                chat_id,
+                "note",
+                note
+            )
+
+        return
