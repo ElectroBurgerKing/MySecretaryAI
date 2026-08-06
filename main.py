@@ -1,6 +1,6 @@
 import telebot
 
-from telebot.types import CallbackQuery
+from telebot.types import CallbackQuery, ReplyKeyboardRemove
 
 from config import BOT_TOKEN
 from ai import ask_ai
@@ -11,13 +11,14 @@ from handlers.menu import main_menu
 bot = telebot.TeleBot(BOT_TOKEN)
 
 
-# ---------- START ----------
+# =========================
+# Главное меню
+# =========================
 
-@bot.message_handler(commands=["start"])
-def start(message):
+def show_main_menu(chat_id):
 
     bot.send_message(
-        message.chat.id,
+        chat_id,
         "🤖 Элло 1.0\n\n"
         "👋 Привет!\n"
         "Я твой личный ИИ-секретарь.\n\n"
@@ -26,12 +27,35 @@ def start(message):
     )
 
 
-# ---------- Очистка памяти ----------
+# =========================
+# START
+# =========================
+
+@bot.message_handler(commands=["start"])
+def start(message):
+
+    # Убираем старую нижнюю клавиатуру
+    bot.send_message(
+        message.chat.id,
+        "Запускаю Элло...",
+        reply_markup=ReplyKeyboardRemove()
+    )
+
+    show_main_menu(
+        message.chat.id
+    )
+
+
+# =========================
+# Очистка памяти
+# =========================
 
 @bot.message_handler(commands=["clear"])
 def clear(message):
 
-    clear_history(message.chat.id)
+    clear_history(
+        message.chat.id
+    )
 
     bot.send_message(
         message.chat.id,
@@ -39,10 +63,12 @@ def clear(message):
     )
 
 
-# ---------- Обработка кнопок ----------
+# =========================
+# Кнопки меню
+# =========================
 
 @bot.callback_query_handler(func=lambda call: True)
-def buttons(call: CallbackQuery):
+def callback_handler(call: CallbackQuery):
 
     chat_id = call.message.chat.id
 
@@ -51,7 +77,7 @@ def buttons(call: CallbackQuery):
 
         bot.send_message(
             chat_id,
-            "💬 Напиши сообщение, и я отвечу."
+            "💬 Напиши сообщение — я отвечу."
         )
 
 
@@ -59,8 +85,8 @@ def buttons(call: CallbackQuery):
 
         bot.send_message(
             chat_id,
-            "🧠 Раздел памяти.\n"
-            "Скоро здесь можно будет смотреть и изменять сохранённые данные."
+            "🧠 Память Элло\n\n"
+            "Скоро здесь появится просмотр и управление памятью."
         )
 
 
@@ -68,8 +94,8 @@ def buttons(call: CallbackQuery):
 
         bot.send_message(
             chat_id,
-            "👤 Профиль пользователя.\n"
-            "Настройка профиля будет добавлена."
+            "👤 Профиль\n\n"
+            "Здесь будут настройки пользователя."
         )
 
 
@@ -77,8 +103,8 @@ def buttons(call: CallbackQuery):
 
         bot.send_message(
             chat_id,
-            "⚙️ Настройки Элло.\n"
-            "Скоро здесь появятся переключатели."
+            "⚙️ Настройки\n\n"
+            "Здесь будут настройки Элло."
         )
 
 
@@ -86,8 +112,8 @@ def buttons(call: CallbackQuery):
 
         bot.send_message(
             chat_id,
-            "🟢 Элло работает.\n"
-            "🤖 Искусственный интеллект подключён."
+            "🟢 Элло работает\n"
+            "🤖 ИИ подключён"
         )
 
 
@@ -95,18 +121,22 @@ def buttons(call: CallbackQuery):
 
         bot.send_message(
             chat_id,
-            "❓ Возможности Элло:\n\n"
-            "• ответы на вопросы\n"
-            "• память пользователя\n"
-            "• личный помощник\n"
-            "• будущий режим секретаря"
+            "❓ Элло умеет:\n\n"
+            "• отвечать на вопросы\n"
+            "• запоминать важные данные\n"
+            "• работать как помощник\n"
+            "• в будущем управлять чатами"
         )
 
 
-    bot.answer_callback_query(call.id)
+    bot.answer_callback_query(
+        call.id
+    )
 
 
-# ---------- Чат с ИИ ----------
+# =========================
+# Общение с ИИ
+# =========================
 
 @bot.message_handler(func=lambda message: True)
 def chat(message):
@@ -126,11 +156,13 @@ def chat(message):
 
     except Exception as e:
 
-        print(e)
+        print(
+            e
+        )
 
         bot.send_message(
             message.chat.id,
-            "⚠️ Ошибка обработки запроса."
+            "⚠️ Ошибка при обращении к ИИ."
         )
 
 
