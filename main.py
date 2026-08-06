@@ -18,9 +18,10 @@ def start(message):
 
     bot.send_message(
         message.chat.id,
-        "👋 Привет!\n\n"
-        "Я Элло — твой личный ИИ-секретарь.\n\n"
-        "Выбери нужный раздел:",
+        "🤖 Элло 1.0\n\n"
+        "👋 Привет!\n"
+        "Я твой личный ИИ-секретарь.\n\n"
+        "Выбери действие:",
         reply_markup=main_menu()
     )
 
@@ -38,10 +39,10 @@ def clear(message):
     )
 
 
-# ---------- Кнопки меню ----------
+# ---------- Обработка кнопок ----------
 
 @bot.callback_query_handler(func=lambda call: True)
-def callback_handler(call: CallbackQuery):
+def buttons(call: CallbackQuery):
 
     chat_id = call.message.chat.id
 
@@ -50,7 +51,7 @@ def callback_handler(call: CallbackQuery):
 
         bot.send_message(
             chat_id,
-            "💬 Напишите сообщение, и я отвечу."
+            "💬 Напиши сообщение, и я отвечу."
         )
 
 
@@ -58,7 +59,8 @@ def callback_handler(call: CallbackQuery):
 
         bot.send_message(
             chat_id,
-            "🧠 Управление памятью скоро будет добавлено."
+            "🧠 Раздел памяти.\n"
+            "Скоро здесь можно будет смотреть и изменять сохранённые данные."
         )
 
 
@@ -66,7 +68,8 @@ def callback_handler(call: CallbackQuery):
 
         bot.send_message(
             chat_id,
-            "👤 Профиль пользователя скоро будет доступен."
+            "👤 Профиль пользователя.\n"
+            "Настройка профиля будет добавлена."
         )
 
 
@@ -74,7 +77,8 @@ def callback_handler(call: CallbackQuery):
 
         bot.send_message(
             chat_id,
-            "⚙️ Настройки Элло скоро будут доступны."
+            "⚙️ Настройки Элло.\n"
+            "Скоро здесь появятся переключатели."
         )
 
 
@@ -83,7 +87,7 @@ def callback_handler(call: CallbackQuery):
         bot.send_message(
             chat_id,
             "🟢 Элло работает.\n"
-            "🤖 AI-модель активна."
+            "🤖 Искусственный интеллект подключён."
         )
 
 
@@ -91,17 +95,18 @@ def callback_handler(call: CallbackQuery):
 
         bot.send_message(
             chat_id,
-            "❓ Я умею:\n\n"
-            "• отвечать на вопросы\n"
-            "• запоминать важные факты\n"
-            "• работать как личный помощник"
+            "❓ Возможности Элло:\n\n"
+            "• ответы на вопросы\n"
+            "• память пользователя\n"
+            "• личный помощник\n"
+            "• будущий режим секретаря"
         )
 
 
     bot.answer_callback_query(call.id)
 
 
-# ---------- Обычный чат ----------
+# ---------- Чат с ИИ ----------
 
 @bot.message_handler(func=lambda message: True)
 def chat(message):
@@ -125,11 +130,11 @@ def chat(message):
 
         bot.send_message(
             message.chat.id,
-            "⚠️ Временно не удалось получить ответ."
+            "⚠️ Ошибка обработки запроса."
         )
 
 
-print("🚀 Ello 4.0 started")
+print("🚀 Ello 1.0 started")
 
 
 bot.infinity_polling()
