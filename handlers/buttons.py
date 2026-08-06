@@ -1,5 +1,8 @@
 from telebot import TeleBot
-from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+from telebot.types import (
+    InlineKeyboardMarkup,
+    InlineKeyboardButton
+)
 
 from handlers.actions.secretary import (
     secretary_info,
@@ -14,12 +17,14 @@ def secretary_keyboard():
 
     keyboard = InlineKeyboardMarkup()
 
+
     keyboard.add(
         InlineKeyboardButton(
-            "🟢 Включить/Выключить",
+            "🟢 Вкл / Выкл",
             callback_data="sec_toggle"
         )
     )
+
 
     keyboard.add(
         InlineKeyboardButton(
@@ -28,12 +33,14 @@ def secretary_keyboard():
         )
     )
 
+
     keyboard.add(
         InlineKeyboardButton(
             "😊 Стиль",
             callback_data="sec_style"
         )
     )
+
 
     keyboard.add(
         InlineKeyboardButton(
@@ -42,7 +49,31 @@ def secretary_keyboard():
         )
     )
 
+
+    keyboard.add(
+        InlineKeyboardButton(
+            "🔄 Обновить",
+            callback_data="sec_refresh"
+        )
+    )
+
+
     return keyboard
+
+
+
+
+def update_secretary_message(bot, call):
+
+    bot.edit_message_text(
+        secretary_info(
+            call.message.chat.id
+        ),
+        chat_id=call.message.chat.id,
+        message_id=call.message.message_id,
+        reply_markup=secretary_keyboard()
+    )
+
 
 
 
@@ -58,7 +89,7 @@ def register_buttons(bot: TeleBot):
 
 
 
-        # Открытие секретаря
+        # Открытие меню секретаря
 
         if call.data == "secretary":
 
@@ -70,33 +101,29 @@ def register_buttons(bot: TeleBot):
 
 
 
-        # Вкл / выкл
+        # Включить / выключить
 
         elif call.data == "sec_toggle":
 
-            status = toggle_secretary(chat_id)
-
-
-            text = (
-                "🤖 AI-Секретарь включён."
-                if status
-                else
-                "🛑 AI-Секретарь выключен."
+            toggle_secretary(
+                chat_id
             )
 
 
-            bot.send_message(
-                chat_id,
-                text
+            update_secretary_message(
+                bot,
+                call
             )
 
 
 
-        # Режим
+        # Смена режима
 
         elif call.data == "sec_mode":
 
-            current = get_secretary(chat_id)
+            current = get_secretary(
+                chat_id
+            )
 
 
             if current["mode"] == "auto":
@@ -106,8 +133,6 @@ def register_buttons(bot: TeleBot):
                     "analysis"
                 )
 
-                mode = "👀 Анализ"
-
 
             elif current["mode"] == "analysis":
 
@@ -115,8 +140,6 @@ def register_buttons(bot: TeleBot):
                     chat_id,
                     "draft"
                 )
-
-                mode = "📝 Черновики"
 
 
             else:
@@ -126,21 +149,21 @@ def register_buttons(bot: TeleBot):
                     "auto"
                 )
 
-                mode = "🤖 Автоответ"
 
-
-            bot.send_message(
-                chat_id,
-                "⚡ Новый режим: " + mode
+            update_secretary_message(
+                bot,
+                call
             )
 
 
 
-        # Стиль
+        # Смена стиля
 
         elif call.data == "sec_style":
 
-            current = get_secretary(chat_id)
+            current = get_secretary(
+                chat_id
+            )
 
 
             if current["style"] == "friendly":
@@ -150,8 +173,6 @@ def register_buttons(bot: TeleBot):
                     "formal"
                 )
 
-                style = "💼 Официальный"
-
 
             elif current["style"] == "formal":
 
@@ -159,8 +180,6 @@ def register_buttons(bot: TeleBot):
                     chat_id,
                     "short"
                 )
-
-                style = "⚡ Короткий"
 
 
             else:
@@ -170,35 +189,40 @@ def register_buttons(bot: TeleBot):
                     "friendly"
                 )
 
-                style = "😊 Дружелюбный"
 
-
-            bot.send_message(
-                chat_id,
-                "😊 Новый стиль: " + style
+            update_secretary_message(
+                bot,
+                call
             )
 
 
 
-        # Память
+        # Переключение памяти
 
         elif call.data == "sec_memory":
 
-            settings = get_secretary(chat_id)
+            settings = get_secretary(
+                chat_id
+            )
 
 
             settings["memory"] = not settings["memory"]
 
 
-            bot.send_message(
-                chat_id,
-                "🧠 Память секретаря: "
-                + (
-                    "🟢 включена"
-                    if settings["memory"]
-                    else
-                    "🔴 выключена"
-                )
+            update_secretary_message(
+                bot,
+                call
+            )
+
+
+
+        # Просто обновить
+
+        elif call.data == "sec_refresh":
+
+            update_secretary_message(
+                bot,
+                call
             )
 
 
