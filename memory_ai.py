@@ -10,57 +10,52 @@ def analyze_memory(chat_id, user_text):
 
 
     # =====================
-    # Имя + дополнительная информация
+    # Имя
     # =====================
 
-    name_match = re.search(
+    name_patterns = [
+
         r"меня зовут\s+([а-яa-zё\-]+)",
-        lower
-    )
+
+        r"(?:привет|здравствуй|это)?\s*я\s+([а-яa-zё\-]+)",
+
+    ]
 
 
-    if name_match:
+    for pattern in name_patterns:
 
-        name = name_match.group(1)
-
-
-        set_fact(
-            chat_id,
-            "name",
-            name.title()
-        )
-
-
-        # Если дальше есть профессия
-
-        job_match = re.search(
-            r"(я\s+)?(работаю|программист|разработчик|инженер|дизайнер|учусь)\s*(.*)",
+        name_match = re.search(
+            pattern,
             lower
         )
 
 
-        if job_match:
+        if name_match:
 
-            job = job_match.group(0)
-
-            job = (
-                job
-                .replace("я", "")
-                .replace("работаю", "")
-                .strip()
-            )
+            name = name_match.group(1).strip()
 
 
-            if job:
+            bad_words = [
+                "программист",
+                "разработчик",
+                "работаю",
+                "люблю",
+                "занимаюсь",
+                "хочу",
+                "думаю"
+            ]
+
+
+            if name not in bad_words:
 
                 set_fact(
                     chat_id,
-                    "job",
-                    job
+                    "name",
+                    name.title()
                 )
 
 
-        return
+            break
 
 
 
@@ -82,33 +77,36 @@ def analyze_memory(chat_id, user_text):
             age.group(1)
         )
 
-        return
-
 
 
     # =====================
-    # Работа / профессия
+    # Профессия
     # =====================
 
     job_patterns = [
+
         r"я\s+программист",
+
         r"я\s+разработчик",
+
         r"я\s+инженер",
+
         r"я\s+работаю\s+(.+)"
+
     ]
 
 
     for pattern in job_patterns:
 
-        match = re.search(
+        job_match = re.search(
             pattern,
             lower
         )
 
 
-        if match:
+        if job_match:
 
-            job = match.group(0)
+            job = job_match.group(0).strip()
 
 
             set_fact(
@@ -117,7 +115,8 @@ def analyze_memory(chat_id, user_text):
                 job
             )
 
-            return
+
+            break
 
 
 
@@ -133,32 +132,50 @@ def analyze_memory(chat_id, user_text):
 
     if hobby_match:
 
-        hobby = hobby_match.group(2)
+        hobbies_text = hobby_match.group(2)
 
-
-        # Разделяем через запятую и "и"
 
         hobbies = re.split(
-            r",| и | & ",
-            hobby
+            r",| и ",
+            hobbies_text
         )
 
 
-        for item in hobbies:
+        for hobby in hobbies:
 
-            item = item.strip()
+            hobby = hobby.strip()
 
 
-            if item:
+            if hobby:
 
                 set_fact(
                     chat_id,
                     "hobby",
-                    item
+                    hobby
                 )
 
 
-        return
+
+    # =====================
+    # Предпочтения
+    # =====================
+
+    preference_match = re.search(
+        r"предпочитаю\s+(.+)",
+        lower
+    )
+
+
+    if preference_match:
+
+        preference = preference_match.group(1).strip()
+
+
+        set_fact(
+            chat_id,
+            "preference",
+            preference
+        )
 
 
 
