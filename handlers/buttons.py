@@ -1,214 +1,206 @@
 from telebot import TeleBot
-from telebot.types import CallbackQuery
-
-from handlers.menu import (
-    main_menu,
-    memory_menu,
-    settings_menu,
-    secretary_menu
-)
-
-from handlers.actions.memory import (
-    get_memory,
-    clear_memory
-)
-
-from handlers.actions.profile import (
-    get_profile_text
-)
+from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 from handlers.actions.secretary import (
-    get_secretary_status,
-    enable_secretary
+    secretary_info,
+    toggle_secretary,
+    set_secretary_style,
+    set_secretary_mode,
+    get_secretary
 )
 
-from handlers.actions.settings import (
-    get_user_settings,
-    update_setting
-)
+
+def secretary_keyboard():
+
+    keyboard = InlineKeyboardMarkup()
+
+    keyboard.add(
+        InlineKeyboardButton(
+            "🟢 Включить/Выключить",
+            callback_data="sec_toggle"
+        )
+    )
+
+    keyboard.add(
+        InlineKeyboardButton(
+            "⚡ Режим",
+            callback_data="sec_mode"
+        )
+    )
+
+    keyboard.add(
+        InlineKeyboardButton(
+            "😊 Стиль",
+            callback_data="sec_style"
+        )
+    )
+
+    keyboard.add(
+        InlineKeyboardButton(
+            "🧠 Память",
+            callback_data="sec_memory"
+        )
+    )
+
+    return keyboard
+
 
 
 def register_buttons(bot: TeleBot):
 
 
-    @bot.callback_query_handler(func=lambda call: True)
-    def callback_handler(call: CallbackQuery):
+    @bot.callback_query_handler(
+        func=lambda call: True
+    )
+    def callbacks(call):
 
         chat_id = call.message.chat.id
 
 
-        # 💬 Чат
 
-        if call.data == "chat":
+        # Открытие секретаря
 
-            bot.send_message(
-                chat_id,
-                "💬 Чат активен.\n"
-                "Напиши сообщение — Элло ответит."
-            )
-
-
-        # 🧠 Память
-
-        elif call.data == "memory":
+        if call.data == "secretary":
 
             bot.send_message(
                 chat_id,
-                "🧠 Память Элло",
-                reply_markup=memory_menu()
+                secretary_info(chat_id),
+                reply_markup=secretary_keyboard()
             )
 
 
-        elif call.data == "show_memory":
+
+        # Вкл / выкл
+
+        elif call.data == "sec_toggle":
+
+            status = toggle_secretary(chat_id)
+
+
+            text = (
+                "🤖 AI-Секретарь включён."
+                if status
+                else
+                "🛑 AI-Секретарь выключен."
+            )
+
 
             bot.send_message(
                 chat_id,
-                get_memory(chat_id)
+                text
             )
 
 
-        elif call.data == "clear_memory":
+
+        # Режим
+
+        elif call.data == "sec_mode":
+
+            current = get_secretary(chat_id)
+
+
+            if current["mode"] == "auto":
+
+                set_secretary_mode(
+                    chat_id,
+                    "analysis"
+                )
+
+                mode = "👀 Анализ"
+
+
+            elif current["mode"] == "analysis":
+
+                set_secretary_mode(
+                    chat_id,
+                    "draft"
+                )
+
+                mode = "📝 Черновики"
+
+
+            else:
+
+                set_secretary_mode(
+                    chat_id,
+                    "auto"
+                )
+
+                mode = "🤖 Автоответ"
+
 
             bot.send_message(
                 chat_id,
-                clear_memory(chat_id)
+                "⚡ Новый режим: " + mode
             )
 
 
-        elif call.data == "add_memory":
+
+        # Стиль
+
+        elif call.data == "sec_style":
+
+            current = get_secretary(chat_id)
+
+
+            if current["style"] == "friendly":
+
+                set_secretary_style(
+                    chat_id,
+                    "formal"
+                )
+
+                style = "💼 Официальный"
+
+
+            elif current["style"] == "formal":
+
+                set_secretary_style(
+                    chat_id,
+                    "short"
+                )
+
+                style = "⚡ Короткий"
+
+
+            else:
+
+                set_secretary_style(
+                    chat_id,
+                    "friendly"
+                )
+
+                style = "😊 Дружелюбный"
+
 
             bot.send_message(
                 chat_id,
-                "➕ Отправь факт так:\n\n"
-                "name=Алексей\n"
-                "hobby=игры"
+                "😊 Новый стиль: " + style
             )
 
 
-        # 👤 Профиль
 
-        elif call.data == "profile":
+        # Память
+
+        elif call.data == "sec_memory":
+
+            settings = get_secretary(chat_id)
+
+
+            settings["memory"] = not settings["memory"]
+
 
             bot.send_message(
                 chat_id,
-                get_profile_text(chat_id)
+                "🧠 Память секретаря: "
+                + (
+                    "🟢 включена"
+                    if settings["memory"]
+                    else
+                    "🔴 выключена"
+                )
             )
 
-
-        # ⚙️ Настройки
-
-        elif call.data == "settings":
-
-            settings = get_user_settings(chat_id)
-
-            bot.send_message(
-                chat_id,
-                "⚙️ Настройки:\n\n"
-                f"🧠 Память: {settings.get('memory')}\n"
-                f"😊 Стиль: {settings.get('style')}",
-                reply_markup=settings_menu()
-            )
-
-
-        elif call.data == "settings_memory":
-
-            update_setting(
-                chat_id,
-                "memory",
-                True
-            )
-
-            bot.send_message(
-                chat_id,
-                "🧠 Память включена."
-            )
-
-
-        elif call.data == "settings_style":
-
-            update_setting(
-                chat_id,
-                "style",
-                "friendly"
-            )
-
-            bot.send_message(
-                chat_id,
-                "😊 Стиль: дружелюбный."
-            )
-
-
-        elif call.data == "settings_model":
-
-            bot.send_message(
-                chat_id,
-                "🤖 Сейчас используется Gemini."
-            )
-
-
-        # 🤖 Секретарь
-
-        elif call.data == "secretary":
-
-            bot.send_message(
-                chat_id,
-                get_secretary_status(chat_id),
-                reply_markup=secretary_menu()
-            )
-
-
-        elif call.data == "secretary_on":
-
-            bot.send_message(
-                chat_id,
-                enable_secretary(chat_id)
-            )
-
-
-        elif call.data == "secretary_settings":
-
-            bot.send_message(
-                chat_id,
-                "⚙️ Настройки секретаря скоро подключим."
-            )
-
-
-        # 📊 Статус
-
-        elif call.data == "status":
-
-            bot.send_message(
-                chat_id,
-                "🟢 Элло работает\n\n"
-                "🤖 Gemini: OK\n"
-                "🧠 Память: OK\n"
-                "⚙️ Система: OK"
-            )
-
-
-        # ❓ Помощь
-
-        elif call.data == "help":
-
-            bot.send_message(
-                chat_id,
-                "❓ Элло умеет:\n\n"
-                "💬 Общаться\n"
-                "🧠 Запоминать\n"
-                "👤 Хранить профиль\n"
-                "🤖 Готовиться стать секретарём"
-            )
-
-
-        # Назад
-
-        elif call.data == "back":
-
-            bot.send_message(
-                chat_id,
-                "🤖 Главное меню",
-                reply_markup=main_menu()
-            )
 
 
         bot.answer_callback_query(
