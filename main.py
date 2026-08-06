@@ -1,43 +1,17 @@
 import telebot
-from telebot.types import (
-    ReplyKeyboardMarkup,
-    KeyboardButton
-)
+
+from telebot.types import CallbackQuery
 
 from config import BOT_TOKEN
 from ai import ask_ai
 from memory import clear_history
+from handlers.menu import main_menu
+
 
 bot = telebot.TeleBot(BOT_TOKEN)
 
 
-# ---------- Главное меню ----------
-
-def main_menu():
-
-    keyboard = ReplyKeyboardMarkup(
-        resize_keyboard=True
-    )
-
-    keyboard.row(
-        KeyboardButton("🤖 Чат"),
-        KeyboardButton("🧠 Память")
-    )
-
-    keyboard.row(
-        KeyboardButton("👤 Профиль"),
-        KeyboardButton("⚙️ Настройки")
-    )
-
-    keyboard.row(
-        KeyboardButton("📊 Статус"),
-        KeyboardButton("❓ Помощь")
-    )
-
-    return keyboard
-
-
-# ---------- Команда START ----------
+# ---------- START ----------
 
 @bot.message_handler(commands=["start"])
 def start(message):
@@ -64,55 +38,67 @@ def clear(message):
     )
 
 
-# ---------- Кнопки ----------
+# ---------- Кнопки меню ----------
 
-@bot.message_handler(func=lambda m: m.text == "🧠 Память")
-def memory_menu(message):
+@bot.callback_query_handler(func=lambda call: True)
+def callback_handler(call: CallbackQuery):
 
-    bot.send_message(
-        message.chat.id,
-        "🧠 Скоро здесь будет управление памятью."
-    )
+    chat_id = call.message.chat.id
 
 
-@bot.message_handler(func=lambda m: m.text == "👤 Профиль")
-def profile_menu(message):
+    if call.data == "chat":
 
-    bot.send_message(
-        message.chat.id,
-        "👤 Скоро здесь будет профиль пользователя."
-    )
-
-
-@bot.message_handler(func=lambda m: m.text == "⚙️ Настройки")
-def settings_menu(message):
-
-    bot.send_message(
-        message.chat.id,
-        "⚙️ Скоро здесь появятся настройки."
-    )
+        bot.send_message(
+            chat_id,
+            "💬 Напишите сообщение, и я отвечу."
+        )
 
 
-@bot.message_handler(func=lambda m: m.text == "📊 Статус")
-def status_menu(message):
+    elif call.data == "memory":
 
-    bot.send_message(
-        message.chat.id,
-        "🟢 Элло работает.\n"
-        "Модель Gemini активна."
-    )
+        bot.send_message(
+            chat_id,
+            "🧠 Управление памятью скоро будет добавлено."
+        )
 
 
-@bot.message_handler(func=lambda m: m.text == "❓ Помощь")
-def help_menu(message):
+    elif call.data == "profile":
 
-    bot.send_message(
-        message.chat.id,
-        "Я могу:\n\n"
-        "• отвечать на вопросы\n"
-        "• запоминать важные факты\n"
-        "• быть личным помощником"
-    )
+        bot.send_message(
+            chat_id,
+            "👤 Профиль пользователя скоро будет доступен."
+        )
+
+
+    elif call.data == "settings":
+
+        bot.send_message(
+            chat_id,
+            "⚙️ Настройки Элло скоро будут доступны."
+        )
+
+
+    elif call.data == "status":
+
+        bot.send_message(
+            chat_id,
+            "🟢 Элло работает.\n"
+            "🤖 AI-модель активна."
+        )
+
+
+    elif call.data == "help":
+
+        bot.send_message(
+            chat_id,
+            "❓ Я умею:\n\n"
+            "• отвечать на вопросы\n"
+            "• запоминать важные факты\n"
+            "• работать как личный помощник"
+        )
+
+
+    bot.answer_callback_query(call.id)
 
 
 # ---------- Обычный чат ----------
@@ -132,6 +118,7 @@ def chat(message):
             answer
         )
 
+
     except Exception as e:
 
         print(e)
@@ -143,5 +130,6 @@ def chat(message):
 
 
 print("🚀 Ello 4.0 started")
+
 
 bot.infinity_polling()
