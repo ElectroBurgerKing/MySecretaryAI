@@ -8,6 +8,11 @@ from handlers.menu import (
     secretary_menu
 )
 
+from profile import (
+    get_all_facts,
+    set_fact
+)
+
 
 def register_buttons(bot: TeleBot):
 
@@ -17,6 +22,8 @@ def register_buttons(bot: TeleBot):
 
         chat_id = call.message.chat.id
 
+
+        # Главное меню
 
         if call.data == "chat":
 
@@ -41,7 +48,7 @@ def register_buttons(bot: TeleBot):
             bot.send_message(
                 chat_id,
                 "👤 Профиль пользователя\n\n"
-                "Здесь скоро появится информация о тебе."
+                "Здесь будет информация о тебе."
             )
 
 
@@ -69,8 +76,8 @@ def register_buttons(bot: TeleBot):
             bot.send_message(
                 chat_id,
                 "🟢 Элло работает\n"
-                "🤖 Модель: Gemini\n"
-                "🧠 Память: активна"
+                "🤖 Модель подключена\n"
+                "🧠 Память активна"
             )
 
 
@@ -78,14 +85,81 @@ def register_buttons(bot: TeleBot):
 
             bot.send_message(
                 chat_id,
-                "❓ Помощь Элло\n\n"
-                "Я умею:\n"
-                "• отвечать на вопросы\n"
-                "• хранить память\n"
-                "• работать как помощник\n"
-                "• готовиться стать секретарём"
+                "❓ Возможности Элло:\n\n"
+                "• чат с ИИ\n"
+                "• память пользователя\n"
+                "• настройки\n"
+                "• режим секретаря"
             )
 
+
+        # Память
+
+        elif call.data == "show_memory":
+
+            facts = get_all_facts(chat_id)
+
+
+            if not facts:
+
+                text = (
+                    "🧠 Память пустая."
+                )
+
+            else:
+
+                text = "🧠 Что я знаю о тебе:\n\n"
+
+
+                for key, value in facts.items():
+
+                    if isinstance(value, list):
+
+                        if value:
+
+                            text += (
+                                f"• {key}: "
+                                + ", ".join(value)
+                                + "\n"
+                            )
+
+                    else:
+
+                        text += (
+                            f"• {key}: {value}\n"
+                        )
+
+
+            bot.send_message(
+                chat_id,
+                text
+            )
+
+
+        elif call.data == "add_memory":
+
+            bot.send_message(
+                chat_id,
+                "➕ Напиши факт для сохранения.\n\n"
+                "Например:\n"
+                "hobby=игры\n"
+                "name=Алексей"
+            )
+
+
+        elif call.data == "clear_memory":
+
+            profile = get_all_facts(chat_id)
+
+            profile.clear()
+
+            bot.send_message(
+                chat_id,
+                "🗑 Память очищена."
+            )
+
+
+        # Назад
 
         elif call.data == "back":
 
@@ -96,37 +170,13 @@ def register_buttons(bot: TeleBot):
             )
 
 
-        elif call.data == "show_memory":
-
-            bot.send_message(
-                chat_id,
-                "🧠 Пока память пуста.\n"
-                "Скоро подключим просмотр сохранённых данных."
-            )
-
-
-        elif call.data == "add_memory":
-
-            bot.send_message(
-                chat_id,
-                "➕ Напиши факт, который нужно запомнить."
-            )
-
-
-        elif call.data == "clear_memory":
-
-            bot.send_message(
-                chat_id,
-                "🗑 Очистка памяти будет подключена."
-            )
-
+        # Остальные настройки пока оставляем
 
         elif call.data.startswith("settings_"):
 
             bot.send_message(
                 chat_id,
-                "⚙️ Настройка выбрана.\n"
-                "Функция будет подключена следующим этапом."
+                "⚙️ Этот раздел скоро подключим."
             )
 
 
@@ -134,9 +184,10 @@ def register_buttons(bot: TeleBot):
 
             bot.send_message(
                 chat_id,
-                "🤖 Настройка секретаря выбрана.\n"
-                "Скоро подключим реальные функции."
+                "🤖 Этот раздел скоро подключим."
             )
 
 
-        bot.answer_callback_query(call.id)
+        bot.answer_callback_query(
+            call.id
+        )
