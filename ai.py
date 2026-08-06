@@ -7,6 +7,7 @@ from config import (
 
 from memory import add_message
 from brain import build_prompt
+from memory_ai import analyze_memory
 
 
 genai.configure(
@@ -16,6 +17,30 @@ genai.configure(
 
 def ask_ai(chat_id, user_text):
 
+
+    # =========================
+    # Анализ памяти
+    # =========================
+
+    try:
+
+        analyze_memory(
+            chat_id,
+            user_text
+        )
+
+    except Exception as e:
+
+        print(
+            "Memory error:",
+            e
+        )
+
+
+    # =========================
+    # Создание контекста
+    # =========================
+
     messages = build_prompt(
         chat_id,
         user_text
@@ -24,7 +49,9 @@ def ask_ai(chat_id, user_text):
 
     prompt = ""
 
+
     for message in messages:
+
         prompt += (
             message["role"]
             + ": "
@@ -33,10 +60,10 @@ def ask_ai(chat_id, user_text):
         )
 
 
-    last_error = None
+    # =========================
+    # Запуск моделей
+    # =========================
 
-
-    # Пробуем модели по очереди
     for model_name in MODELS:
 
         try:
@@ -56,11 +83,13 @@ def ask_ai(chat_id, user_text):
 
             if answer:
 
+
                 add_message(
                     chat_id,
                     "user",
                     user_text
                 )
+
 
                 add_message(
                     chat_id,
@@ -68,22 +97,20 @@ def ask_ai(chat_id, user_text):
                     answer
                 )
 
+
                 return answer
 
 
         except Exception as e:
 
-            last_error = e
-
             print(
                 f"Модель {model_name} не сработала: {e}"
             )
 
-
             continue
 
 
+
     return (
-        "Извините, у меня временные сложности с подключением. "
-        "Попробуйте немного позже."
+        "⚠️ Сейчас не удалось подключиться к ИИ."
     )
