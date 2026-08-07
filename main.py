@@ -134,4 +134,10 @@ def unsupported_content(message):
 print(f"🚀 {BOT_NAME} started")
 
 
-bot.infinity_polling()
+bot.infinity_polling(
+    allowed_updates=[
+        "message",
+        "business_message",
+        "edited_business_message"
+    ]
+)
