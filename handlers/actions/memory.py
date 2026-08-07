@@ -1,4 +1,8 @@
-from profile import get_all_facts, set_fact
+from profile import (
+    get_all_facts,
+    set_fact,
+    clear_profile
+)
 
 
 def get_memory(chat_id):
@@ -15,25 +19,34 @@ def get_memory(chat_id):
         if isinstance(value, list):
 
             if value:
-                text += f"• {key}: {', '.join(value)}\n"
+                text += (
+                    f"• {key}: "
+                    f"{', '.join(value)}\n"
+                )
 
         else:
-            text += f"• {key}: {value}\n"
+
+            text += (
+                f"• {key}: {value}\n"
+            )
 
     return text
-
 
 
 def add_memory(chat_id, data):
 
     if "=" not in data:
+
         return (
             "❌ Неверный формат.\n\n"
             "Пример:\n"
             "name=Алексей"
         )
 
-    key, value = data.split("=", 1)
+    key, value = data.split(
+        "=",
+        1
+    )
 
     set_fact(
         chat_id,
@@ -44,11 +57,10 @@ def add_memory(chat_id, data):
     return "✅ Запомнил."
 
 
-
 def clear_memory(chat_id):
 
-    profile = get_all_facts(chat_id)
-
-    profile.clear()
+    clear_profile(
+        chat_id
+    )
 
     return "🗑 Память очищена."
