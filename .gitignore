@@ -1,0 +1,14 @@
+# Пользовательские данные — никогда не должны попадать в git
+data/*.json
+users.json
+profile.json
+*.json.tmp
+
+# Секреты
+.env
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
